@@ -24,3 +24,29 @@ def test_user_list():
 def test_user_me():
     assert reverse("api:user-me") == "/api/users/me/"
     assert resolve("/api/users/me/").view_name == "api:user-me"
+
+
+def test_auth_login():
+    assert reverse("api:auth-login") == "/api/auth/login/"
+    assert resolve("/api/auth/login/").view_name == "api:auth-login"
+
+
+def test_auth_token_refresh():
+    assert reverse("api:auth-token-refresh") == "/api/auth/token/refresh/"
+    assert resolve("/api/auth/token/refresh/").view_name == "api:auth-token-refresh"
+
+
+def test_auth_password_reset():
+    assert reverse("api:auth-password-reset") == "/api/auth/password-reset/"
+    assert resolve("/api/auth/password-reset/").view_name == "api:auth-password-reset"
+
+
+def test_auth_password_reset_confirm():
+    assert (
+        reverse("api:auth-password-reset-confirm")
+        == "/api/auth/password-reset/confirm/"
+    )
+    assert (
+        resolve("/api/auth/password-reset/confirm/").view_name
+        == "api:auth-password-reset-confirm"
+    )

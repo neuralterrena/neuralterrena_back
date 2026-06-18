@@ -30,8 +30,7 @@ class TestUserAdminCreationForm:
         form = UserAdminCreationForm(
             {
                 "email": user.email,
-                "password1": user.password,
-                "password2": user.password,
+                "name": "Duplicate User",
             },
         )
 

@@ -3,6 +3,7 @@ from http import HTTPStatus
 from importlib import reload
 
 import pytest
+from allauth.account.models import EmailAddress
 from django.contrib import admin
 from django.contrib.auth.models import AnonymousUser
 from django.urls import reverse
@@ -12,6 +13,15 @@ from neuralterrena.users.models import User
 
 
 class TestUserAdmin:
+    def test_index_uses_unfold_branding(self, admin_client):
+        response = admin_client.get(reverse("admin:index"))
+
+        assert response.status_code == HTTPStatus.OK
+        assert b"Neural Terrena Console" in response.content
+        assert b"/static/unfold/css/styles.css" in response.content
+        assert b"unfold-neuralterrena.css" in response.content
+        assert b"NT-logo-color-horizontal.png" in response.content
+
     def test_changelist(self, admin_client):
         url = reverse("admin:users_user_changelist")
         response = admin_client.get(url)
@@ -31,12 +41,48 @@ class TestUserAdmin:
             url,
             data={
                 "email": "new-admin@example.com",
-                "password1": "My_R@ndom-P@ssw0rd",
-                "password2": "My_R@ndom-P@ssw0rd",
+                "name": "New Admin",
             },
         )
         assert response.status_code == HTTPStatus.FOUND
-        assert User.objects.filter(email="new-admin@example.com").exists()
+        user = User.objects.get(email="new-admin@example.com")
+        assert user.name == "New Admin"
+        assert not user.has_usable_password()
+
+        email_address = EmailAddress.objects.get(user=user, email=user.email)
+        assert email_address.primary
+        assert email_address.verified
+
+    def test_add_sends_password_setup_email(self, admin_client, mailoutbox):
+        url = reverse("admin:users_user_add")
+        response = admin_client.post(
+            url,
+            data={
+                "email": "invited-user@example.com",
+                "name": "Invited User",
+            },
+        )
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert len(mailoutbox) == 1
+        assert mailoutbox[0].to == ["invited-user@example.com"]
+        assert "/accounts/password/reset/key/" in mailoutbox[0].body
+
+    def test_resend_password_setup_email_action(self, admin_client, mailoutbox):
+        user = User.objects.create_user(email="resend@example.com")
+        url = reverse("admin:users_user_changelist")
+        response = admin_client.post(
+            url,
+            data={
+                "action": "resend_password_setup_email",
+                "_selected_action": [str(user.pk)],
+            },
+        )
+
+        assert response.status_code == HTTPStatus.FOUND
+        assert len(mailoutbox) == 1
+        assert mailoutbox[0].to == ["resend@example.com"]
+        assert EmailAddress.objects.get(user=user, email="resend@example.com").verified
 
     def test_view_user(self, admin_client):
         user = User.objects.get(email="admin@example.com")
