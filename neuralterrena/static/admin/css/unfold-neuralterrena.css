@@ -1,0 +1,68 @@
+:root {
+  --nt-color-yellow: #f9b233;
+  --nt-color-orange: #e85d2f;
+  --nt-color-red: #c62828;
+  --nt-color-blue: #1e4f82;
+  --nt-color-black: #1a1a1a;
+  --nt-bg-subtle: #f6f6f6;
+}
+
+html,
+body {
+  background: var(--nt-bg-subtle);
+  color: var(--nt-color-black);
+}
+
+body {
+  letter-spacing: 0.01em;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid var(--nt-color-blue);
+  outline-offset: 2px;
+}
+
+input,
+select,
+textarea,
+button {
+  border-radius: 4px;
+}
+
+[class*="shadow"],
+[style*="box-shadow"] {
+  box-shadow: none !important;
+}
+
+.bg-base-50 {
+  background-color: var(--nt-bg-subtle) !important;
+}
+
+.text-red-600,
+.text-red-700,
+.text-red-800 {
+  color: var(--nt-color-red) !important;
+}
+
+.border-red-500,
+.border-red-600 {
+  border-color: var(--nt-color-red) !important;
+}
+
+.text-orange-600,
+.text-orange-700 {
+  color: var(--nt-color-orange) !important;
+}
+
+.bg-orange-100 {
+  background-color: color-mix(in srgb, var(--nt-color-orange) 12%, white) !important;
+}
+
+.bg-yellow-100 {
+  background-color: color-mix(in srgb, var(--nt-color-yellow) 16%, white) !important;
+}
