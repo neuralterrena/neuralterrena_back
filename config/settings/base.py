@@ -1,10 +1,12 @@
-# ruff: noqa: ERA001, E501
+# ruff: noqa: E501
 """Base settings to build other settings files upon."""
 
 import ssl
+from datetime import timedelta
 from pathlib import Path
 
 import environ
+from django.utils.translation import gettext_lazy as _
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 # neuralterrena/
@@ -28,10 +30,9 @@ TIME_ZONE = "Europe/Madrid"
 # https://docs.djangoproject.com/en/dev/ref/settings/#language-code
 LANGUAGE_CODE = "es-es"
 # https://docs.djangoproject.com/en/dev/ref/settings/#languages
-from django.utils.translation import gettext_lazy as _
 LANGUAGES = [
-    ('es', _('Español')),
-    ('en', _('Inglés')),
+    ("es", _("Español")),
+    ("en", _("Inglés")),
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#site-id
 SITE_ID = 1
@@ -67,6 +68,7 @@ DJANGO_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     # "django.contrib.humanize", # Handy template tags
+    "unfold",
     "django.contrib.admin",
     "django.forms",
 ]
@@ -74,10 +76,10 @@ THIRD_PARTY_APPS = [
     "allauth",
     "allauth.account",
     "allauth.mfa",
-    "allauth.socialaccount",
     "django_celery_beat",
     "rest_framework",
     "rest_framework.authtoken",
+    "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "drf_spectacular",
 ]
@@ -231,6 +233,80 @@ MANAGERS = ADMINS
 # https://cookiecutter-django.readthedocs.io/en/latest/settings.html#other-environment-settings
 # Force the `admin` sign in process to go through the `django-allauth` workflow
 DJANGO_ADMIN_FORCE_ALLAUTH = env.bool("DJANGO_ADMIN_FORCE_ALLAUTH", default=False)
+UNFOLD = {
+    "SITE_TITLE": "Neural Terrena Console",
+    "SITE_HEADER": "Neural Terrena",
+    "SITE_SUBHEADER": "Terrain Intelligence",
+    "SITE_LOGO": "neuralterrena.contrib.unfold.admin_logo",
+    "SITE_ICON": "neuralterrena.contrib.unfold.admin_icon",
+    "SITE_FAVICONS": [
+        {
+            "rel": "icon",
+            "type": "image/svg+xml",
+            "href": "neuralterrena.contrib.unfold.admin_favicon_svg",
+        },
+        {
+            "rel": "icon",
+            "type": "image/png",
+            "sizes": "96x96",
+            "href": "neuralterrena.contrib.unfold.admin_favicon_96",
+        },
+        {
+            "rel": "apple-touch-icon",
+            "sizes": "180x180",
+            "href": "neuralterrena.contrib.unfold.admin_favicon_apple",
+        },
+    ],
+    "SITE_URL": "/",
+    "SHOW_HISTORY": True,
+    "SHOW_LANGUAGES": False,
+    "SHOW_VIEW_ON_SITE": False,
+    "THEME": "light",
+    "BORDER_RADIUS": "4px",
+    "COLORS": {
+        "base": {
+            "50": "#F6F6F6",
+            "100": "#EEEEEE",
+            "200": "#E3E3E3",
+            "300": "#CFCFCF",
+            "400": "#A8A8A8",
+            "500": "#7A7A7A",
+            "600": "#5A5A5A",
+            "700": "#404040",
+            "800": "#2B2B2B",
+            "900": "#1A1A1A",
+            "950": "#111111",
+        },
+        "primary": {
+            "50": "#EAF1F7",
+            "100": "#D6E3EF",
+            "200": "#B0C9DF",
+            "300": "#89AECE",
+            "400": "#5F92BA",
+            "500": "#2C6698",
+            "600": "#1E4F82",
+            "700": "#163E68",
+            "800": "#102E4F",
+            "900": "#0C223A",
+            "950": "#081625",
+        },
+        "font": {
+            "subtle-light": "var(--color-base-500)",
+            "subtle-dark": "var(--color-base-400)",
+            "default-light": "var(--color-base-700)",
+            "default-dark": "var(--color-base-300)",
+            "important-light": "var(--color-base-900)",
+            "important-dark": "var(--color-base-100)",
+        },
+    },
+    "STYLES": [
+        "neuralterrena.contrib.unfold.admin_stylesheet",
+    ],
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": True,
+    },
+}
 
 # LOGGING
 # ------------------------------------------------------------------------------
@@ -300,7 +376,7 @@ CELERY_TASK_SEND_SENT_EVENT = True
 CELERY_WORKER_HIJACK_ROOT_LOGGER = False
 # django-allauth
 # ------------------------------------------------------------------------------
-ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", True)
+ACCOUNT_ALLOW_REGISTRATION = env.bool("DJANGO_ACCOUNT_ALLOW_REGISTRATION", False)
 # https://docs.allauth.org/en/latest/account/configuration.html
 ACCOUNT_LOGIN_METHODS = {"email"}
 # https://docs.allauth.org/en/latest/account/configuration.html
@@ -309,26 +385,54 @@ ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 # https://docs.allauth.org/en/latest/account/configuration.html
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+PASSWORD_RESET_TIMEOUT = 60 * 60 * 24
 # https://docs.allauth.org/en/latest/account/configuration.html
 ACCOUNT_ADAPTER = "neuralterrena.users.adapters.AccountAdapter"
 # https://docs.allauth.org/en/latest/account/forms.html
 ACCOUNT_FORMS = {"signup": "neuralterrena.users.forms.UserSignupForm"}
-# https://docs.allauth.org/en/latest/socialaccount/configuration.html
-SOCIALACCOUNT_ADAPTER = "neuralterrena.users.adapters.SocialAccountAdapter"
-# https://docs.allauth.org/en/latest/socialaccount/configuration.html
-SOCIALACCOUNT_FORMS = {"signup": "neuralterrena.users.forms.UserSocialSignupForm"}
 
 # django-rest-framework
 # -------------------------------------------------------------------------------
 # django-rest-framework - https://www.django-rest-framework.org/api-guide/settings/
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework.authentication.SessionAuthentication",
-        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(
+        minutes=env.int("DJANGO_JWT_ACCESS_TOKEN_LIFETIME_MINUTES", default=5),
+    ),
+    "REFRESH_TOKEN_LIFETIME": timedelta(
+        days=env.int("DJANGO_JWT_REFRESH_TOKEN_LIFETIME_DAYS", default=7),
+    ),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+JWT_AUTH_REFRESH_COOKIE = env(
+    "DJANGO_JWT_REFRESH_COOKIE",
+    default="refresh_token",
+)
+JWT_AUTH_REFRESH_COOKIE_SECURE = env.bool(
+    "DJANGO_JWT_REFRESH_COOKIE_SECURE",
+    default=True,
+)
+JWT_AUTH_REFRESH_COOKIE_HTTP_ONLY = True
+JWT_AUTH_REFRESH_COOKIE_SAMESITE = "Lax"
+JWT_AUTH_REFRESH_COOKIE_PATH = "/api/auth/token/"
+JWT_AUTH_REFRESH_COOKIE_DOMAIN = env(
+    "DJANGO_JWT_REFRESH_COOKIE_DOMAIN",
+    default=None,
+)
+FRONTEND_RESET_PASSWORD_URL = env(
+    "DJANGO_FRONTEND_RESET_PASSWORD_URL",
+    default="",
+)
 
 # django-cors-headers - https://github.com/adamchainz/django-cors-headers#setup
 CORS_URLS_REGEX = r"^/api/.*$"
