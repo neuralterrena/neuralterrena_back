@@ -1,0 +1,7 @@
+# PostgreSQL
+# ------------------------------------------------------------------------------
+POSTGRES_HOST=postgres
+POSTGRES_PORT=5432
+POSTGRES_DB=neuralterrena
+POSTGRES_USER=DbuHrdNimYxkQebrAbdUwhiduRgwvgUV
+POSTGRES_PASSWORD=nskhR86930VnWrSIxKmqu1PKKBNgqTwaEpIjemo616Yjq2S5POEMs4H4MrYdAo4t
