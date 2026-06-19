@@ -2,9 +2,9 @@ volumes:
   production_postgres_data: {}
   production_postgres_data_backups: {}
   production_traefik: {}
-  
+
   production_redis_data: {}
-  
+
 
 
 services:
@@ -49,10 +49,10 @@ services:
 
   redis:
     image: docker.io/redis:7.2
-    
+
     volumes:
       - production_redis_data:/data
-    
+
 
   celeryworker:
     <<: *django
@@ -77,3 +77,17 @@ services:
       - ./.envs/.production/.django
     volumes:
       - production_postgres_data_backups:/backups:z
+
+  mjml:
+    image: neuralterrena_production_mjmlserver
+    container_name: neuralterrena_production_mjmlserver
+    build:
+      context: .
+      dockerfile: ./compose/production/mjml/Dockerfile
+    restart: always
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "28101"
+      MJML_ARGS: "--mjml.minify=true --mjml.validationLevel=strict"
+    ports:
+      - "28101:28101"

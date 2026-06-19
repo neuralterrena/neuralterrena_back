@@ -65,8 +65,15 @@ WSGI_APPLICATION = "config.wsgi.application"
 # ------------------------------------------------------------------------------
 DJANGO_SHARED_APPS = [
     "django_tenants",
-    "neuralterrena.customers",
-    "neuralterrena.users",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sessions",
+    "django.contrib.sites",
+    "django.contrib.messages",
+    "django.contrib.staticfiles",
+    "unfold",
+    "django.contrib.admin",
+    "django.forms",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -78,17 +85,9 @@ DJANGO_SHARED_APPS = [
     "django.contrib.admin",
     "django.forms",
 ]
-DJANGO_TENANT_APPS = [
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.sites",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    # "django.contrib.humanize", # Handy template tags
-    "unfold",
-    "django.contrib.admin",
-    "django.forms",
+TENANT_APPS = [
+    "neuralterrena.customers",
+    "neuralterrena.users",
 ]
 THIRD_PARTY_APPS = [
     "allauth",
@@ -100,14 +99,10 @@ THIRD_PARTY_APPS = [
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "drf_spectacular",
+    "mjml",
 ]
 
-LOCAL_APPS = [
-    "neuralterrena.users",
-    # Your stuff: custom apps go here
-]
-SHARED_APPS = tuple(DJANGO_SHARED_APPS)
-TENANT_APPS = tuple([*DJANGO_TENANT_APPS, *THIRD_PARTY_APPS, *LOCAL_APPS])
+SHARED_APPS = tuple(DJANGO_SHARED_APPS +THIRD_PARTY_APPS)
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
 
@@ -470,5 +465,10 @@ SPECTACULAR_SETTINGS = {
     "SERVE_PERMISSIONS": ["rest_framework.permissions.AllowAny"],
     "SCHEMA_PATH_PREFIX": "/api/",
 }
-# Your stuff...
+
+# MJML
 # ------------------------------------------------------------------------------
+MJML_BACKEND_MODE = "tcpserver"
+MJML_TCPSERVERS = [
+    ("mjml", 28101),
+]
