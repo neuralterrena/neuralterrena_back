@@ -11,7 +11,9 @@ from rest_framework import status
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken
 from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+from rest_framework_simplejwt.tokens import UntypedToken
 
+from neuralterrena.customers.models import Client
 from neuralterrena.users.tests.factories import UserFactory
 
 if TYPE_CHECKING:
@@ -27,14 +29,19 @@ class TestJWTAuthentication:
         return APIClient()
 
     def test_login_returns_access_and_refresh_cookie(self, api_client: APIClient):
+        client = Client.objects.create(name="Acme", schema_name="acme")
         user = UserFactory.create(
             email="jwt@example.com",
+            name="Jane Doe",
             password=self.password,
+            client=client,
         )
 
         response = api_client.post(
-            "/api/auth/login/", data={"email": user.email, "password": self.password},
+            "/api/auth/login/",
+            data={"email": user.email, "password": self.password},
             format="json",
+            HTTP_X_CLIENT_ID=str(client.id),
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -46,16 +53,24 @@ class TestJWTAuthentication:
         assert cookie["secure"]
         assert cookie["samesite"] == "Lax"
         assert cookie["path"] == "/api/auth/token/"
+        payload = UntypedToken(response.data["access"]).payload
+        assert payload["name"] == user.name
+        assert payload["email"] == user.email
+        assert payload["client_id"] == client.id
+        assert payload["client__name"] == client.name
 
     def test_refresh_reads_cookie_and_rotates_token(self, api_client: APIClient):
+        client = Client.objects.create(name="Refresh", schema_name="refresh")
         user = UserFactory.create(
             email="refresh@example.com",
             password=self.password,
+            client=client,
         )
         login_response = api_client.post(
             "/api/auth/login/",
             data={"email": user.email, "password": self.password},
             format="json",
+            HTTP_X_CLIENT_ID=str(client.id),
         )
         first_refresh = login_response.cookies[settings.JWT_AUTH_REFRESH_COOKIE].value
 
@@ -84,14 +99,17 @@ class TestJWTAuthentication:
         assert response.data["detail"] == "Refresh token cookie is missing."
 
     def test_logout_blacklists_refresh_and_clears_cookie(self, api_client: APIClient):
+        client = Client.objects.create(name="Logout", schema_name="logout")
         user = UserFactory.create(
             email="logout@example.com",
             password=self.password,
+            client=client,
         )
         login_response = api_client.post(
             "/api/auth/login/",
             data={"email": user.email, "password": self.password},
             format="json",
+            HTTP_X_CLIENT_ID=str(client.id),
         )
         refresh_token = login_response.cookies[settings.JWT_AUTH_REFRESH_COOKIE].value
 
@@ -121,12 +139,15 @@ class TestJWTAuthentication:
         api_client: APIClient,
         user: User,
     ):
+        client = Client.objects.create(name="Users", schema_name="users")
+        user.client = client
         user.set_password(self.password)
-        user.save(update_fields=["password"])
+        user.save(update_fields=["client", "password"])
         login_response = api_client.post(
             "/api/auth/login/",
             data={"email": user.email, "password": self.password},
             format="json",
+            HTTP_X_CLIENT_ID=str(client.id),
         )
         api_client.credentials(
             HTTP_AUTHORIZATION=f"Bearer {login_response.data['access']}",
@@ -149,12 +170,14 @@ class TestPasswordResetAPI:
         api_client: APIClient,
         mailoutbox,
     ):
-        user = UserFactory.create(email="reset@example.com")
+        client = Client.objects.create(name="Reset", schema_name="reset")
+        user = UserFactory.create(email="reset@example.com", client=client)
 
         response = api_client.post(
             "/api/auth/password-reset/",
             data={"email": user.email},
             format="json",
+            HTTP_X_CLIENT_ID=str(client.id),
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -168,10 +191,12 @@ class TestPasswordResetAPI:
         api_client: APIClient,
         mailoutbox,
     ):
+        client = Client.objects.create(name="Unknown", schema_name="unknown")
         response = api_client.post(
             "/api/auth/password-reset/",
             data={"email": "unknown@example.com"},
             format="json",
+            HTTP_X_CLIENT_ID=str(client.id),
         )
 
         assert response.status_code == status.HTTP_200_OK
@@ -182,7 +207,8 @@ class TestPasswordResetAPI:
         assert len(mailoutbox) == 0
 
     def test_password_reset_confirm_changes_password(self, api_client: APIClient):
-        user = UserFactory.create(email="confirm@example.com")
+        client = Client.objects.create(name="Confirm", schema_name="confirm")
+        user = UserFactory.create(email="confirm@example.com", client=client)
         token_generator = PasswordResetTokenGenerator()
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = token_generator.make_token(user)
@@ -195,6 +221,7 @@ class TestPasswordResetAPI:
                 "new_password": "N3w-R@ndom-Passw0rd",
             },
             format="json",
+            HTTP_X_CLIENT_ID=str(client.id),
         )
 
         user.refresh_from_db()
@@ -202,7 +229,8 @@ class TestPasswordResetAPI:
         assert user.check_password("N3w-R@ndom-Passw0rd")
 
     def test_password_reset_confirm_rejects_invalid_token(self, api_client: APIClient):
-        user = UserFactory.create(email="badtoken@example.com")
+        client = Client.objects.create(name="Bad Token", schema_name="badtoken")
+        user = UserFactory.create(email="badtoken@example.com", client=client)
         uid = urlsafe_base64_encode(force_bytes(user.pk))
 
         response = api_client.post(
@@ -213,6 +241,7 @@ class TestPasswordResetAPI:
                 "new_password": "N3w-R@ndom-Passw0rd",
             },
             format="json",
+            HTTP_X_CLIENT_ID=str(client.id),
         )
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST

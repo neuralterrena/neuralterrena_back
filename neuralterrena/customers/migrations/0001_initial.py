@@ -1,6 +1,6 @@
-from django_tenants.postgresql_backend.base import _check_schema_name
 from django.db import migrations
 from django.db import models
+from django_tenants.postgresql_backend.base import _check_schema_name
 
 
 class Migration(migrations.Migration):
@@ -37,35 +37,6 @@ class Migration(migrations.Migration):
                 "verbose_name": "Client",
                 "verbose_name_plural": "Clients",
                 "ordering": ("name",),
-            },
-        ),
-        migrations.CreateModel(
-            name="Domain",
-            fields=[
-                (
-                    "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("domain", models.CharField(db_index=True, max_length=253, unique=True)),
-                ("is_primary", models.BooleanField(db_index=True, default=True)),
-                (
-                    "tenant",
-                    models.ForeignKey(
-                        on_delete=models.deletion.CASCADE,
-                        related_name="domains",
-                        to="customers.client",
-                    ),
-                ),
-            ],
-            options={
-                "verbose_name": "Domain",
-                "verbose_name_plural": "Domains",
-                "ordering": ("domain",),
             },
         ),
     ]

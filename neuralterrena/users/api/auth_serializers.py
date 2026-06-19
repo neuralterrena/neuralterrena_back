@@ -26,6 +26,15 @@ User = get_user_model()
 class LoginSerializer(TokenObtainPairSerializer):
     username_field = User.USERNAME_FIELD
 
+    @classmethod
+    def get_token(cls, user: User):
+        token = super().get_token(user)
+        token["name"] = user.name
+        token["email"] = user.email
+        token["client_id"] = user.client_id
+        token["client__name"] = user.client.name if user.client_id else None
+        return token
+
 
 class CookieRefreshSerializer(serializers.Serializer):
     access = serializers.CharField(read_only=True)

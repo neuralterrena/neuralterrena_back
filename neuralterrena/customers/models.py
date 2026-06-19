@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from django_tenants.models import DomainMixin
 from django_tenants.models import TenantMixin
 
 
@@ -17,10 +16,3 @@ class Client(TenantMixin):
 
     def __str__(self) -> str:
         return self.name
-
-
-class Domain(DomainMixin):
-    class Meta:
-        verbose_name = _("Domain")
-        verbose_name_plural = _("Domains")
-        ordering = ("domain",)
