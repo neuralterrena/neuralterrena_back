@@ -39,6 +39,14 @@ To run the tests, check your test coverage, and generate an HTML coverage report
 
     uv run pytest
 
+### Tenant migrations
+
+`django-tenants` is configured for PostgreSQL schemas. After installing dependencies, run:
+
+    uv run python manage.py migrate_schemas --shared
+
+Then create the public tenant and its primary domain before serving tenant traffic.
+
 ### Live reloading and Sass CSS compilation
 
 Moved to [Live reloading and SASS compilation](https://cookiecutter-django.readthedocs.io/en/latest/2-local-development/developing-locally.html#using-webpack-or-gulp).

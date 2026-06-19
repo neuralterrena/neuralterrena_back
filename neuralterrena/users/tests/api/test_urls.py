@@ -36,6 +36,11 @@ def test_auth_token_refresh():
     assert resolve("/api/auth/token/refresh/").view_name == "api:auth-token-refresh"
 
 
+def test_auth_logout():
+    assert reverse("api:auth-logout") == "/api/auth/token/logout/"
+    assert resolve("/api/auth/token/logout/").view_name == "api:auth-logout"
+
+
 def test_auth_password_reset():
     assert reverse("api:auth-password-reset") == "/api/auth/password-reset/"
     assert resolve("/api/auth/password-reset/").view_name == "api:auth-password-reset"

@@ -29,7 +29,7 @@ class TestJWTAuthentication:
     def test_login_returns_access_and_refresh_cookie(self, api_client: APIClient):
         user = UserFactory.create(
             email="jwt@example.com",
-            password=self.password,  # noqa: S106
+            password=self.password,
         )
 
         response = api_client.post(
@@ -50,7 +50,7 @@ class TestJWTAuthentication:
     def test_refresh_reads_cookie_and_rotates_token(self, api_client: APIClient):
         user = UserFactory.create(
             email="refresh@example.com",
-            password=self.password,  # noqa: S106
+            password=self.password,
         )
         login_response = api_client.post(
             "/api/auth/login/",
@@ -82,6 +82,39 @@ class TestJWTAuthentication:
 
         assert response.status_code == status.HTTP_401_UNAUTHORIZED
         assert response.data["detail"] == "Refresh token cookie is missing."
+
+    def test_logout_blacklists_refresh_and_clears_cookie(self, api_client: APIClient):
+        user = UserFactory.create(
+            email="logout@example.com",
+            password=self.password,
+        )
+        login_response = api_client.post(
+            "/api/auth/login/",
+            data={"email": user.email, "password": self.password},
+            format="json",
+        )
+        refresh_token = login_response.cookies[settings.JWT_AUTH_REFRESH_COOKIE].value
+
+        logout_response = api_client.post(
+            "/api/auth/token/logout/",
+            data={},
+            format="json",
+        )
+
+        assert logout_response.status_code == status.HTTP_200_OK
+        assert logout_response.data["detail"] == "Logout completed successfully."
+        assert BlacklistedToken.objects.count() == 1
+        cleared_cookie = logout_response.cookies[settings.JWT_AUTH_REFRESH_COOKIE]
+        assert cleared_cookie.value == ""
+        assert cleared_cookie["max-age"] == 0
+
+        refresh_response = api_client.post(
+            "/api/auth/token/refresh/",
+            data={},
+            format="json",
+        )
+        assert refresh_response.status_code == status.HTTP_401_UNAUTHORIZED
+        assert str(BlacklistedToken.objects.first().token.token) == refresh_token
 
     def test_jwt_authenticates_protected_endpoint(
         self,

@@ -16,6 +16,7 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext_lazy as _
 from rest_framework import exceptions
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenBlacklistSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
@@ -46,6 +47,25 @@ class CookieRefreshSerializer(serializers.Serializer):
         serializer = TokenRefreshSerializer(data={"refresh": refresh_cookie})
         serializer.is_valid(raise_exception=True)
         return serializer.validated_data
+
+
+class LogoutSerializer(serializers.Serializer):
+    default_error_messages = {
+        "missing_refresh_cookie": _("Refresh token cookie is missing."),
+    }
+
+    def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
+        request = self.context["request"]
+        refresh_cookie = request.COOKIES.get(settings.JWT_AUTH_REFRESH_COOKIE)
+        if not refresh_cookie:
+            raise exceptions.AuthenticationFailed(
+                self.error_messages["missing_refresh_cookie"],
+                code="missing_refresh_cookie",
+            )
+
+        serializer = TokenBlacklistSerializer(data={"refresh": refresh_cookie})
+        serializer.is_valid(raise_exception=True)
+        return {"refresh": refresh_cookie}
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):

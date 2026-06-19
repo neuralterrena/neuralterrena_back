@@ -4,6 +4,7 @@ from rest_framework.routers import DefaultRouter
 from rest_framework.routers import SimpleRouter
 
 from neuralterrena.users.api.auth_views import LoginView
+from neuralterrena.users.api.auth_views import LogoutView
 from neuralterrena.users.api.auth_views import PasswordResetConfirmView
 from neuralterrena.users.api.auth_views import PasswordResetRequestView
 from neuralterrena.users.api.auth_views import RefreshTokenView
@@ -18,6 +19,7 @@ app_name = "api"
 urlpatterns = [
     path("auth/login/", LoginView.as_view(), name="auth-login"),
     path("auth/token/refresh/", RefreshTokenView.as_view(), name="auth-token-refresh"),
+    path("auth/token/logout/", LogoutView.as_view(), name="auth-logout"),
     path(
         "auth/password-reset/",
         PasswordResetRequestView.as_view(),

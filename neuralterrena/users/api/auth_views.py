@@ -8,6 +8,7 @@ from rest_framework_simplejwt.views import TokenViewBase
 
 from .auth_serializers import CookieRefreshSerializer
 from .auth_serializers import LoginSerializer
+from .auth_serializers import LogoutSerializer
 from .auth_serializers import PasswordResetConfirmSerializer
 from .auth_serializers import PasswordResetRequestSerializer
 
@@ -22,6 +23,14 @@ class RefreshCookieMixin:
             samesite=settings.JWT_AUTH_REFRESH_COOKIE_SAMESITE,
             path=settings.JWT_AUTH_REFRESH_COOKIE_PATH,
             domain=settings.JWT_AUTH_REFRESH_COOKIE_DOMAIN,
+        )
+
+    def clear_refresh_cookie(self, response: Response) -> None:
+        response.delete_cookie(
+            key=settings.JWT_AUTH_REFRESH_COOKIE,
+            path=settings.JWT_AUTH_REFRESH_COOKIE_PATH,
+            domain=settings.JWT_AUTH_REFRESH_COOKIE_DOMAIN,
+            samesite=settings.JWT_AUTH_REFRESH_COOKIE_SAMESITE,
         )
 
 
@@ -45,6 +54,21 @@ class RefreshTokenView(RefreshCookieMixin, TokenViewBase):
         refresh_token = response.data.pop("refresh", None)
         if refresh_token:
             self.set_refresh_cookie(response, refresh_token)
+        return response
+
+
+class LogoutView(RefreshCookieMixin, TokenViewBase):
+    permission_classes = (AllowAny,)
+    serializer_class = LogoutSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        response = Response(
+            {"detail": "Logout completed successfully."},
+            status=status.HTTP_200_OK,
+        )
+        self.clear_refresh_cookie(response)
         return response
 
 
