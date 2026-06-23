@@ -639,6 +639,18 @@ wheels = [
 ]
 
 [[package]]
+name = "django-mjml"
+version = "1.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/a9/c3/f1a2c3ecad18bcb3a4f583113d13a22b260cd4ff05451de5554b04b2c9c9/django_mjml-1.5.tar.gz", hash = "sha256:3a6048859f2f9023ffdef95a63595ad66a572d9c8f4be06d3b2f6d84d412be8b", size = 8585, upload-time = "2025-12-07T23:21:53.377Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5f/21/0c4823be3b461ff8ad3f34a6503a284c15cd9b422d47345f3bede877a166/django_mjml-1.5-py3-none-any.whl", hash = "sha256:216faa121e6fdf6eee55061e63a6958a6ab04c6094323ebb8db42385c583ff2d", size = 7986, upload-time = "2025-12-07T23:21:52.135Z" },
+]
+
+[[package]]
 name = "django-model-utils"
 version = "5.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -711,6 +723,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/d8/01/419bc3cd882f3ec645d5a4511085202dd6bd3ef8d385871dcd2d32cc15b3/django_stubs_ext-6.0.5.tar.gz", hash = "sha256:1cc325e991303849bce70e19748981b225ef08b37256f263e113caf97cd3bcc0", size = 6666, upload-time = "2026-05-25T08:46:36.012Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/ef/bf/7ee71071d84ad4e0efcd77e2681afed254a5f65c27524441a9caf8c60467/django_stubs_ext-6.0.5-py3-none-any.whl", hash = "sha256:a9932c8233d6dd4e34ae0b192026379c1a9be8f0b7c27aa1fa09ae215169773e", size = 10362, upload-time = "2026-05-25T08:46:34.467Z" },
+]
+
+[[package]]
+name = "django-tenants"
+version = "3.10.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3a/c9/8aec4bc3ebb24cd9fd21567a7046d765d4d90b2e808de6ab54ca8e063920/django_tenants-3.10.0.tar.gz", hash = "sha256:81a4cd54695b7e561ec89dbcf952262d5643cbbfc3c92d184bb9698e857c529d", size = 154750, upload-time = "2026-02-04T08:45:27.781Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/92/96/43691f2b1ebd70a934c11fed8b2d71d9ee97279428a3e2f618945bfc178c/django_tenants-3.10.0-py3-none-any.whl", hash = "sha256:15a9fc6080321d1f159ffa4334eb90f0438ed75658df7e963b1ad68f641add11", size = 216376, upload-time = "2026-02-04T08:44:36.992Z" },
 ]
 
 [[package]]
@@ -1326,9 +1350,11 @@ dependencies = [
     { name = "django-celery-beat" },
     { name = "django-cors-headers" },
     { name = "django-environ" },
+    { name = "django-mjml" },
     { name = "django-model-utils" },
     { name = "django-redis" },
     { name = "django-storages", extra = ["s3"] },
+    { name = "django-tenants" },
     { name = "django-unfold" },
     { name = "djangorestframework" },
     { name = "djangorestframework-simplejwt" },
@@ -1380,9 +1406,11 @@ requires-dist = [
     { name = "django-celery-beat", specifier = "==2.9.0" },
     { name = "django-cors-headers", specifier = "==4.9.0" },
     { name = "django-environ", specifier = "==0.13.0" },
+    { name = "django-mjml", specifier = "==1.5" },
     { name = "django-model-utils", specifier = "==5.0.0" },
     { name = "django-redis", specifier = "==7.0.0" },
     { name = "django-storages", extras = ["s3"], specifier = "==1.14.6" },
+    { name = "django-tenants", specifier = "==3.10.0" },
     { name = "django-unfold", specifier = "==0.97.2" },
     { name = "djangorestframework", specifier = "==3.17.1" },
     { name = "djangorestframework-simplejwt", specifier = ">=5.5.1" },
