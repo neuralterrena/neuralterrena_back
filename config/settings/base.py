@@ -74,16 +74,6 @@ DJANGO_SHARED_APPS = [
     "unfold",
     "django.contrib.admin",
     "django.forms",
-    "django.contrib.auth",
-    "django.contrib.contenttypes",
-    "django.contrib.sessions",
-    "django.contrib.sites",
-    "django.contrib.messages",
-    "django.contrib.staticfiles",
-    # "django.contrib.humanize", # Handy template tags
-    "unfold",
-    "django.contrib.admin",
-    "django.forms",
 ]
 TENANT_APPS = [
     "neuralterrena.customers",

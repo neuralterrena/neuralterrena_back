@@ -26,7 +26,7 @@ class User(AbstractUser):
     email = EmailField(_("email address"), unique=True)
     username = None  # type: ignore[assignment]
     client = ForeignKey(
-        "customer.Client",
+        "customers.Client",
         on_delete=CASCADE,
         null=True,
         blank=True,
