@@ -4,6 +4,7 @@ import json
 import logging
 
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 from django.db import OperationalError
 from django.db import ProgrammingError
 from django.db import connection
@@ -22,6 +23,12 @@ class TenantTableUnavailableError(Exception):
     """Raised when the shared tenant table has not been created yet."""
 
 
+TENANT_TABLE_UNAVAILABLE_MESSAGE = (
+    "Tenant resolution is unavailable because the shared customers table is missing. "
+    "Run `uv run python manage.py migrate_schemas --shared` and create the public tenant."
+)
+
+
 class JWTTenantMiddleware:
     """
     Resolve the active tenant from the JWT `client_id` claim.
@@ -38,8 +45,7 @@ class JWTTenantMiddleware:
         try:
             tenant = self.get_tenant(request)
         except TenantTableUnavailableError:
-            request.tenant = None
-            return self.get_response(request)
+            raise ImproperlyConfigured(TENANT_TABLE_UNAVAILABLE_MESSAGE) from None
 
         request.tenant = tenant
 
@@ -66,7 +72,12 @@ class JWTTenantMiddleware:
         if tenant is not None:
             return tenant
 
-        return self.get_public_tenant()
+        tenant = self.get_public_tenant()
+        if tenant is not None:
+            return tenant
+
+        msg = "No tenant could be resolved for this request."
+        raise Http404(msg)
 
     def get_tenant_from_jwt(self, request) -> Client | None:
         header = self.jwt_authentication.get_header(request)
@@ -128,11 +139,7 @@ class JWTTenantMiddleware:
         return self._safe_lookup(pk=client_id)
 
     def get_public_tenant(self) -> Client | None:
-        tenant = self._safe_lookup(schema_name=settings.PUBLIC_SCHEMA_NAME)
-        if tenant is None:
-            msg = "No tenant could be resolved for this request."
-            raise Http404(msg)
-        return tenant
+        return self._safe_lookup(schema_name=settings.PUBLIC_SCHEMA_NAME)
 
     def _safe_lookup(self, **filters) -> Client | None:
         try:

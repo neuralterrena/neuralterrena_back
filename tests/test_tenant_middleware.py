@@ -3,10 +3,14 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
+import pytest
+from django.core.exceptions import ImproperlyConfigured
 from django.db import ProgrammingError
+from django.http import Http404
 from rest_framework_simplejwt.tokens import AccessToken
 
 from neuralterrena.customers.middleware import JWTTenantMiddleware
+from neuralterrena.customers.middleware import TENANT_TABLE_UNAVAILABLE_MESSAGE
 from neuralterrena.customers.models import Client
 
 if TYPE_CHECKING:
@@ -71,15 +75,13 @@ class TestJWTTenantMiddleware:
         connection_mock.set_tenant.assert_called_once_with(client)
         connection_mock.set_schema_to_public.assert_called_once_with()
 
-    def test_skips_tenant_binding_when_customers_table_is_unavailable(
+    def test_raises_clear_error_when_customers_table_is_unavailable(
         self,
         monkeypatch,
         rf: RequestFactory,
     ):
-        response = object()
-        get_response = Mock(return_value=response)
         connection_mock = Mock()
-        middleware = JWTTenantMiddleware(get_response)
+        middleware = JWTTenantMiddleware(lambda request: request)
         client_manager_mock = Mock()
         client_manager_mock.filter.side_effect = ProgrammingError(
             'relation "customers_client" does not exist',
@@ -96,7 +98,31 @@ class TestJWTTenantMiddleware:
 
         request = rf.get("/api/docs/")
 
-        assert middleware(request) is response
-        assert request.tenant is None
+        with pytest.raises(ImproperlyConfigured, match="shared customers table"):
+            middleware(request)
+
         connection_mock.set_tenant.assert_not_called()
         connection_mock.set_schema_to_public.assert_not_called()
+
+    def test_tenant_table_error_message_guides_recovery(self):
+        assert "migrate_schemas --shared" in TENANT_TABLE_UNAVAILABLE_MESSAGE
+        assert "public tenant" in TENANT_TABLE_UNAVAILABLE_MESSAGE
+
+    def test_keeps_rejecting_non_admin_requests_without_public_tenant(
+        self,
+        monkeypatch,
+        rf: RequestFactory,
+    ):
+        middleware = JWTTenantMiddleware(lambda request: request)
+        client_manager_mock = Mock()
+        client_manager_mock.filter.return_value.first.return_value = None
+
+        monkeypatch.setattr(
+            "neuralterrena.customers.middleware.Client.objects",
+            client_manager_mock,
+        )
+
+        request = rf.get("/api/docs/")
+
+        with pytest.raises(Http404, match="No tenant could be resolved"):
+            middleware(request)

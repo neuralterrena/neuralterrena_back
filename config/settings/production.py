@@ -162,7 +162,9 @@ INSTALLED_APPS = ["collectfasta", *INSTALLED_APPS]
 
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": True,
+    # Keep Django and dependency loggers alive so request tracebacks reach stdout
+    # in containerized production environments.
+    "disable_existing_loggers": False,
     "formatters": {
         "verbose": {
             "format": "%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s",
@@ -177,6 +179,16 @@ LOGGING = {
     },
     "root": {"level": "INFO", "handlers": ["console"]},
     "loggers": {
+        "django": {
+            "level": "INFO",
+            "handlers": ["console"],
+            "propagate": False,
+        },
+        "django.request": {
+            "level": "ERROR",
+            "handlers": ["console"],
+            "propagate": False,
+        },
         "django.db.backends": {
             "level": "ERROR",
             "handlers": ["console"],
