@@ -9,6 +9,9 @@ def test_django_tenants_is_configured() -> None:
         == "django_tenants.postgresql_backend"
     )
     assert "django_tenants" in settings.SHARED_APPS
+    assert "neuralterrena.customers" in settings.SHARED_APPS
+    assert "neuralterrena.users" in settings.SHARED_APPS
+    assert "neuralterrena.users" not in settings.TENANT_APPS
     assert settings.TENANT_MODEL == "customers.Client"
     assert (
         settings.MIDDLEWARE[0]

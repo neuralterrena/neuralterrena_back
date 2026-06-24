@@ -66,6 +66,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 DJANGO_SHARED_APPS = [
     "django_tenants",
     "neuralterrena.customers",
+    "neuralterrena.users",
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
@@ -76,23 +77,23 @@ DJANGO_SHARED_APPS = [
     "django.contrib.admin",
     "django.forms",
 ]
-TENANT_APPS = [
-    "neuralterrena.users",
-]
-THIRD_PARTY_APPS = [
+THIRD_PARTY_SHARED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.mfa",
     "django_celery_beat",
-    "rest_framework",
     "rest_framework.authtoken",
     "rest_framework_simplejwt.token_blacklist",
     "corsheaders",
     "drf_spectacular",
     "mjml",
 ]
+THIRD_PARTY_TENANT_APPS = [
+    "rest_framework",
+]
+TENANT_APPS = [*THIRD_PARTY_TENANT_APPS]
 
-SHARED_APPS = tuple(DJANGO_SHARED_APPS + THIRD_PARTY_APPS)
+SHARED_APPS = tuple(DJANGO_SHARED_APPS + THIRD_PARTY_SHARED_APPS)
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
 

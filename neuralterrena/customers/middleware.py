@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import json
+import logging
 
 from django.conf import settings
+from django.db import OperationalError
+from django.db import ProgrammingError
 from django.db import connection
 from django.http import Http404
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -11,6 +14,12 @@ from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import UntypedToken
 
 from neuralterrena.customers.models import Client
+
+logger = logging.getLogger(__name__)
+
+
+class TenantTableUnavailableError(Exception):
+    """Raised when the shared tenant table has not been created yet."""
 
 
 class JWTTenantMiddleware:
@@ -26,8 +35,17 @@ class JWTTenantMiddleware:
         self.jwt_authentication = JWTAuthentication()
 
     def __call__(self, request):
-        tenant = self.get_tenant(request)
+        try:
+            tenant = self.get_tenant(request)
+        except TenantTableUnavailableError:
+            request.tenant = None
+            return self.get_response(request)
+
         request.tenant = tenant
+
+        if tenant is None:
+            return self.get_response(request)
+
         connection.set_tenant(tenant)
 
         try:
@@ -35,7 +53,7 @@ class JWTTenantMiddleware:
         finally:
             connection.set_schema_to_public()
 
-    def get_tenant(self, request) -> Client:
+    def get_tenant(self, request) -> Client | None:
         tenant = self.get_tenant_from_jwt(request)
         if tenant is not None:
             return tenant
@@ -107,11 +125,21 @@ class JWTTenantMiddleware:
         if client_id is None:
             return None
 
-        return Client.objects.filter(pk=client_id).first()
+        return self._safe_lookup(pk=client_id)
 
-    def get_public_tenant(self) -> Client:
-        tenant = Client.objects.filter(schema_name=settings.PUBLIC_SCHEMA_NAME).first()
+    def get_public_tenant(self) -> Client | None:
+        tenant = self._safe_lookup(schema_name=settings.PUBLIC_SCHEMA_NAME)
         if tenant is None:
             msg = "No tenant could be resolved for this request."
             raise Http404(msg)
         return tenant
+
+    def _safe_lookup(self, **filters) -> Client | None:
+        try:
+            return Client.objects.filter(**filters).first()
+        except (OperationalError, ProgrammingError):
+            logger.warning(
+                "Tenant lookup skipped because the customers table is unavailable.",
+                exc_info=True,
+            )
+            raise TenantTableUnavailableError from None
