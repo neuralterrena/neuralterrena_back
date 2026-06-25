@@ -232,5 +232,8 @@ sentry_sdk.init(
 SPECTACULAR_SETTINGS["SERVERS"] = [
     {"url": "https://api.neuralterrena.app", "description": "Production server"},
 ]
-# Your stuff...
-# ------------------------------------------------------------------------------
+# django-cors
+# -------------------------------------------------------------------------------
+CORS_ALLOWED_ORIGINS = env.list("DJANGO_CORS_ALLOWED_ORIGINS", default=[])
+CORS_ALLOW_CREDENTIALS = True
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
