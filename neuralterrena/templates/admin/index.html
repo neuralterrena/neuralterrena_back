@@ -1,0 +1,117 @@
+{% extends "admin/base.html" %}
+
+{% load i18n tenant %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+    <div class="flex flex-col lg:flex-row lg:gap-8">
+        <div class="grow">
+            {% if app_list %}
+                {% for app in app_list %}
+                    {% is_public_schema app as is_public_schema %}
+                    {% is_tenant_app app as is_tenant_app %}
+                    {% is_shared_app app as is_shared_app %}
+                    <div class="app-{{ app.app_label }} module{% if app.app_url in request.path %} current-app{% endif %}">
+                        <div class="bg-base-50 mb-6 rounded-default p-3 dark:bg-base-800">
+                            <table class="border border-base-400/10 border-spacing-none border-separate rounded-default overflow-hidden shadow-xs w-full dark:border-base-800">
+                                {% if is_public_schema and not is_shared_app or not is_tenant_app and not is_shared_app %}
+                                    <caption class="font-semibold mb-3 text-base-900 text-left dark:text-base-100">
+                                        <div class="flex items-center gap-3">
+                                            <span>{{ app.name }}</span>
+                                            <span class="inline-flex items-center rounded-full bg-base-300 px-2 py-1 text-xs font-medium text-base-700 dark:bg-base-700 dark:text-base-200">
+                                                {% translate "Unavailable" %}
+                                            </span>
+                                        </div>
+                                    </caption>
+
+                                    <tr class="bg-white dark:bg-base-900">
+                                        <td class="font-normal p-3 text-left text-sm text-font-subtle-light dark:text-font-subtle-dark">
+                                            {% if not is_tenant_app and not is_shared_app %}
+                                                {% translate "Not available for this type of schema" %}
+                                            {% else %}
+                                                {% translate "Not available for global schema" %}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <caption class="font-semibold mb-3 text-base-900 text-left dark:text-base-100">
+                                        <div class="flex items-center gap-3">
+                                            <a href="{{ app.app_url }}" class="section" title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">
+                                                {{ app.name }}
+                                            </a>
+
+                                            {% if not is_public_schema and is_tenant_app %}
+                                                {% colour_admin_apps as colour_admin_apps %}
+                                                {% if colour_admin_apps %}
+                                                    <span class="inline-flex items-center rounded-full bg-emerald-600 px-2 py-1 text-xs font-medium text-white">
+                                                        {% translate "Tenant app" %}
+                                                    </span>
+                                                {% endif %}
+                                            {% elif is_shared_app %}
+                                                <span class="inline-flex items-center rounded-full bg-sky-100 px-2 py-1 text-xs font-medium text-sky-800 dark:bg-sky-950 dark:text-sky-200">
+                                                    {% translate "Shared app" %}
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                    </caption>
+
+                                    {% for model in app.models %}
+                                        {% if not model.hidden %}
+                                            <tr class="bg-white dark:bg-base-900 model-{{ model.object_name|lower }}{% if model.admin_url in request.path %} current-model{% endif %}">
+                                                {% if model.admin_url %}
+                                                    <th scope="row" class="font-normal p-3 text-left {% if not forloop.last %}border-b border-base-100 dark:border-base-800{% endif %}">
+                                                        <a href="{{ model.admin_url }}"{% if model.admin_url in request.path %} aria-current="page"{% endif %}>
+                                                            {{ model.name }}
+                                                        </a>
+                                                    </th>
+                                                {% else %}
+                                                    <th scope="row" class="font-normal p-3 text-left {% if not forloop.last %}border-b border-base-100 dark:border-base-800{% endif %}">
+                                                        {{ model.name }}
+                                                    </th>
+                                                {% endif %}
+
+                                                <td class="{% if not forloop.last %}border-b border-base-100 dark:border-base-800{% endif %} p-3 text-right">
+                                                    <div class="flex flex-row items-center ml-auto gap-4 justify-end">
+                                                        {% if model.add_url %}
+                                                            <a href="{{ model.add_url }}" class="addlink block leading-none text-base-400 transition-colors dark:text-base-500" title="{% translate 'Add' %}">
+                                                                <span class="material-symbols-outlined">add</span>
+                                                            </a>
+                                                        {% endif %}
+
+                                                        {% if model.admin_url and show_changelinks|default:True %}
+                                                            {% if model.view_only %}
+                                                                <a href="{{ model.admin_url }}" class="viewlink block leading-none text-base-400 transition-colors dark:text-base-500" title="{% translate 'View' %}">
+                                                                    <span class="material-symbols-outlined">visibility</span>
+                                                                </a>
+                                                            {% else %}
+                                                                <a href="{{ model.admin_url }}" class="changelink block leading-none text-base-400 transition-colors dark:text-base-300" title="{% translate 'Change' %}">
+                                                                    <span class="material-symbols-outlined">edit_square</span>
+                                                                </a>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </table>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p>
+                    {% trans "You don’t have permission to view or edit anything." as error_message %}
+                    {% include "unfold/helpers/messages/error.html" with error=error_message %}
+                </p>
+            {% endif %}
+        </div>
+
+        {% include "unfold/helpers/history.html" %}
+    </div>
+{% endblock %}

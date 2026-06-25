@@ -1,0 +1,80 @@
+{% load i18n tenant %}
+
+{% if app_list %}
+    <div id="nav-sidebar-apps" class="h-0 grow overflow-auto" data-simplebar>
+        {% for app in app_list %}
+            {% is_public_schema app as is_public_schema %}
+            {% is_tenant_app app as is_tenant_app %}
+            {% is_shared_app app as is_shared_app %}
+            <div class="app-{{ app.app_label }} module{% if app.app_url in request.path %} current-app{% endif %}">
+                <ol class="px-6">
+                    <li>
+                        <div class="mb-2 mt-4">
+                            {% if is_public_schema and not is_shared_app or not is_tenant_app and not is_shared_app %}
+                                <div class="flex items-center gap-2 font-semibold text-font-important-light text-sm truncate dark:text-font-important-dark">
+                                    <span>{{ app.name }}</span>
+                                    <span class="inline-flex items-center rounded-full bg-base-300 px-2 py-0.5 text-[10px] font-medium text-base-700 dark:bg-base-700 dark:text-base-200">
+                                        {% translate "Unavailable" %}
+                                    </span>
+                                </div>
+                                <p class="mt-2 text-xs text-font-subtle-light dark:text-font-subtle-dark">
+                                    {% if not is_tenant_app and not is_shared_app %}
+                                        {% translate "Not available for this type of schema" %}
+                                    {% else %}
+                                        {% translate "Not available for global schema" %}
+                                    {% endif %}
+                                </p>
+                            {% else %}
+                                <h2>
+                                    <a href="{{ app.app_url }}" class="flex items-center gap-2 font-semibold mb-2 text-font-important-light text-sm truncate dark:text-font-important-dark" title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">
+                                        <span>{{ app.name }}</span>
+                                        {% if not is_public_schema and is_tenant_app %}
+                                            {% colour_admin_apps as colour_admin_apps %}
+                                            {% if colour_admin_apps %}
+                                                <span class="inline-flex items-center rounded-full bg-emerald-600 px-2 py-0.5 text-[10px] font-medium text-white">
+                                                    {% translate "Tenant app" %}
+                                                </span>
+                                            {% endif %}
+                                        {% elif is_shared_app %}
+                                            <span class="inline-flex items-center rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-medium text-sky-800 dark:bg-sky-950 dark:text-sky-200">
+                                                {% translate "Shared app" %}
+                                            </span>
+                                        {% endif %}
+                                    </a>
+                                </h2>
+
+                                <ol class="flex flex-col gap-0.5">
+                                    {% for model in app.models %}
+                                        {% if not model.hidden %}
+                                            <li class="model-{{ model.object_name|lower }}{% if model.admin_url in request.path|urlencode %} current-model{% endif %}">
+                                                {% if model.header %}
+                                                    <h3 class="font-medium my-2 text-base-900 text-sm dark:text-base-200">
+                                                        {{ model.header }}
+                                                    </h3>
+                                                {% endif %}
+
+                                                {% if model.admin_url %}
+                                                    <a href="{{ model.admin_url }}" id="link-{{ app.app_label }}-{{ model.object_name|lower }}"
+                                                       class="flex items-center h-[38px] -mx-3 px-3 rounded-default truncate hover:text-primary-600 dark:hover:text-primary-500 {% if model.admin_url in request.path|urlencode %}bg-base-100 font-semibold text-primary-600 dark:bg-white/[.06] dark:text-primary-500 active{% endif %}">
+                                                        {{ model.name }}
+                                                    </a>
+                                                {% else %}
+                                                    {{ model.name }}
+                                                {% endif %}
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ol>
+                            {% endif %}
+                        </div>
+                    </li>
+                </ol>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>
+        {% trans "You don’t have permission to view or edit anything." as error_message %}
+        {% include "unfold/helpers/messages/error.html" with error=error_message %}
+    </p>
+{% endif %}
