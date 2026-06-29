@@ -33,7 +33,7 @@ services:
     env_file:
       - ./.envs/.production/.postgres
     ports:
-      - '5432:2354'
+      - '2354:5432'
 
   traefik:
     build:
