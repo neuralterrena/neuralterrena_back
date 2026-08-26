@@ -9,8 +9,8 @@ from django.db import ProgrammingError
 from django.http import Http404
 from rest_framework_simplejwt.tokens import AccessToken
 
-from neuralterrena.customers.middleware import JWTTenantMiddleware
 from neuralterrena.customers.middleware import TENANT_TABLE_UNAVAILABLE_MESSAGE
+from neuralterrena.customers.middleware import JWTTenantMiddleware
 from neuralterrena.customers.models import Client
 
 if TYPE_CHECKING:

@@ -24,8 +24,10 @@ class TenantTableUnavailableError(Exception):
 
 
 TENANT_TABLE_UNAVAILABLE_MESSAGE = (
-    "Tenant resolution is unavailable because the shared customers table is missing. "
-    "Run `uv run python manage.py migrate_schemas --shared` and create the public tenant."
+    "Tenant resolution is unavailable because the shared "
+    "customers table is missing. "
+    "Run `uv run python manage.py migrate_schemas --shared` "
+    "and create the public tenant."
 )
 
 
@@ -90,7 +92,7 @@ class JWTTenantMiddleware:
 
         try:
             validated_token = self.jwt_authentication.get_validated_token(raw_token)
-        except (InvalidToken, TokenError):
+        except InvalidToken, TokenError:
             return None
 
         client_id = validated_token.get("client_id")
@@ -103,7 +105,7 @@ class JWTTenantMiddleware:
 
         try:
             validated_token = UntypedToken(refresh_cookie)
-        except (InvalidToken, TokenError):
+        except InvalidToken, TokenError:
             return None
 
         client_id = validated_token.get("client_id")
@@ -126,7 +128,7 @@ class JWTTenantMiddleware:
         if "application/json" in content_type:
             try:
                 payload = json.loads(request.body.decode("utf-8") or "{}")
-            except (json.JSONDecodeError, UnicodeDecodeError):
+            except json.JSONDecodeError, UnicodeDecodeError:
                 return None
             return payload.get("client_id")
 
@@ -144,7 +146,7 @@ class JWTTenantMiddleware:
     def _safe_lookup(self, **filters) -> Client | None:
         try:
             return Client.objects.filter(**filters).first()
-        except (OperationalError, ProgrammingError):
+        except OperationalError, ProgrammingError:
             logger.warning(
                 "Tenant lookup skipped because the customers table is unavailable.",
                 exc_info=True,

@@ -156,5 +156,5 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         try:
             user_id = force_str(urlsafe_base64_decode(uid))
             return User.objects.get(pk=user_id, is_active=True)
-        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        except TypeError, ValueError, OverflowError, User.DoesNotExist:
             return None

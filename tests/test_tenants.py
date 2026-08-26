@@ -5,8 +5,7 @@ from neuralterrena.customers.models import Client
 
 def test_django_tenants_is_configured() -> None:
     assert (
-        settings.DATABASES["default"]["ENGINE"]
-        == "django_tenants.postgresql_backend"
+        settings.DATABASES["default"]["ENGINE"] == "django_tenants.postgresql_backend"
     )
     assert "django_tenants" in settings.SHARED_APPS
     assert "neuralterrena.customers" in settings.SHARED_APPS

@@ -9,10 +9,12 @@ def test_signup_is_closed(rf):
 
     assert not get_adapter(request).is_open_for_signup(request)
 
+
 def test_templates_receive_signup_disabled_flag(rf):
     request = rf.get("/accounts/login/")
 
     assert allauth_settings(request)["ACCOUNT_ALLOW_REGISTRATION"] is False
+
 
 def test_password_reset_timeout_is_one_day():
     assert settings.PASSWORD_RESET_TIMEOUT == 60 * 60 * 24

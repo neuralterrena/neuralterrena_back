@@ -17,7 +17,8 @@ class Command(BaseCommand):
         if created:
             self.stdout.write(
                 self.style.SUCCESS(
-                    f"Created public tenant '{public_tenant.name}' for schema '{public_schema_name}'.",
+                    f"Created public tenant '{public_tenant.name}' "
+                    f"for schema '{public_schema_name}'.",
                 ),
             )
             return

@@ -95,7 +95,9 @@ TENANT_APPS = [*THIRD_PARTY_TENANT_APPS]
 
 SHARED_APPS = tuple(DJANGO_SHARED_APPS + THIRD_PARTY_SHARED_APPS)
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
-INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
+INSTALLED_APPS = list(SHARED_APPS) + [
+    app for app in TENANT_APPS if app not in SHARED_APPS
+]
 
 # MIGRATIONS
 # ------------------------------------------------------------------------------
