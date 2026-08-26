@@ -1,0 +1,3 @@
+🎯 **What:** Adds missing tests for the websocket_application logic.
+📊 **Coverage:** Covers successful connect/accept, receiving a ping/sending a pong, and a disconnect that exits correctly.
+✨ **Result:** Improved confidence and testing coverage for the websocket connection logic.
