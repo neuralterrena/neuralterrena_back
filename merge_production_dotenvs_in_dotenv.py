@@ -19,10 +19,7 @@ def merge(
     output_file: Path,
     files_to_merge: Sequence[Path],
 ) -> None:
-    merged_content = ""
-    for merge_file in files_to_merge:
-        merged_content += merge_file.read_text()
-        merged_content += "\n"
+    merged_content = "".join(f.read_text() + "\n" for f in files_to_merge)
     output_file.write_text(merged_content)
 
 
