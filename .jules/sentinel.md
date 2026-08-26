@@ -1,0 +1,4 @@
+## 2025-02-27 - [IDOR in UserDetailView]
+**Vulnerability:** IDOR (Insecure Direct Object Reference) in `UserDetailView` where a user could view the profile of any other user by navigating to `/users/<id>/`.
+**Learning:** `get_queryset()` was not restricted to `self.request.user.id`, allowing unauthorized access to any user profile via the view. Also, the `users` app URLs were inadvertently omitted from `config/urls.py`, so testing this behavior caused unexpected `NoReverseMatch` errors when attempting to verify success URLs.
+**Prevention:** Always override `get_queryset()` in views that handle sensitive objects, ensuring `.filter(id=self.request.user.id)` (or equivalent filtering) is applied to prevent users from interacting with objects that do not belong to them. Ensure app URLs are registered correctly in the project root URLs so tests can properly reverse view names.
