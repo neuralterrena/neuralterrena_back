@@ -21,6 +21,9 @@ class UserDetailView(LoginRequiredMixin, DetailView):
     slug_field = "id"
     slug_url_kwarg = "id"
 
+    def get_queryset(self) -> QuerySet:
+        return super().get_queryset().filter(id=self.request.user.id)
+
 
 user_detail_view = UserDetailView.as_view()
 
