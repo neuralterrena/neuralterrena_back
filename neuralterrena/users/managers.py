@@ -40,3 +40,10 @@ class UserManager(DjangoUserManager["User"]):
             raise ValueError(msg)
 
         return self._create_user(email, password, **extra_fields)
+
+    def get_by_natural_key(self, username):
+        # Avoids N+1 query when serializers/authentication access the related client
+        # Performance optimization to prefetch the client in one query.
+        return self.select_related("client").get(
+            **{self.model.USERNAME_FIELD: username},
+        )
