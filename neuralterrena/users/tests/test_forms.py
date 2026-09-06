@@ -4,8 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from django.forms import EmailField
 from django.utils.translation import gettext_lazy as _
 
+from neuralterrena.users.forms import UserAdminChangeForm
 from neuralterrena.users.forms import UserAdminCreationForm
 
 if TYPE_CHECKING:
@@ -39,3 +41,9 @@ class TestUserAdminCreationForm:
         assert len(form.errors) == 1
         assert "email" in form.errors
         assert form.errors["email"][0] == _("This email has already been taken.")
+
+
+class TestUserAdminChangeForm:
+    def test_email_field_type(self):
+        form = UserAdminChangeForm()
+        assert isinstance(form.fields["email"], EmailField)

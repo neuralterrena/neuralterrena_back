@@ -1,6 +1,9 @@
-import pytest
 import asyncio
+
+import pytest
+
 from config.websocket import websocket_application
+
 
 @pytest.mark.anyio
 async def test_websocket_application():
