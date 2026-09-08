@@ -112,8 +112,8 @@
         {% endif %}
       </p>
       <div class="actions">
-        <a class="primary" href="/accounts/login/">Volver a iniciar sesión</a>
-        <a class="secondary" href="/api/docs/">Ver documentación</a>
+        <a class="primary" href="{% url 'account_login' %}">Volver a iniciar sesión</a>
+        <a class="secondary" href="{% url 'api-docs' %}">Ver documentación</a>
       </div>
     </main>
   </body>
