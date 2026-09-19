@@ -67,7 +67,9 @@ class UserAdmin(ModelAdmin, auth_admin.UserAdmin):
     @admin.action(description=_("Resend password setup email"))
     def resend_password_setup_email(self, request, queryset):
         sent_count = 0
-        for user in queryset:
+        # Performance optimization: Use .iterator() to prevent loading all users
+        # into memory at once when applying the action to a large queryset.
+        for user in queryset.iterator():
             send_password_setup_email(request, user)
             sent_count += 1
         self.message_user(
