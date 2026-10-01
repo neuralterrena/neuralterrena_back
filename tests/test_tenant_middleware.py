@@ -26,7 +26,7 @@ class TestJWTTenantMiddleware:
         connection_mock = Mock()
         middleware = JWTTenantMiddleware(lambda request: request)
         client_manager_mock = Mock()
-        client_manager_mock.filter.return_value.first.return_value = client
+        client_manager_mock.filter.return_value.order_by.return_value.first.return_value = client
 
         monkeypatch.setattr(
             "neuralterrena.customers.middleware.connection",
@@ -55,7 +55,7 @@ class TestJWTTenantMiddleware:
         connection_mock = Mock()
         middleware = JWTTenantMiddleware(lambda request: request)
         client_manager_mock = Mock()
-        client_manager_mock.filter.return_value.first.return_value = client
+        client_manager_mock.filter.return_value.order_by.return_value.first.return_value = client
 
         monkeypatch.setattr(
             "neuralterrena.customers.middleware.connection",
@@ -115,7 +115,7 @@ class TestJWTTenantMiddleware:
     ):
         middleware = JWTTenantMiddleware(lambda request: request)
         client_manager_mock = Mock()
-        client_manager_mock.filter.return_value.first.return_value = None
+        client_manager_mock.filter.return_value.order_by.return_value.first.return_value = None
 
         monkeypatch.setattr(
             "neuralterrena.customers.middleware.Client.objects",

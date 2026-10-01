@@ -145,7 +145,8 @@ class JWTTenantMiddleware:
 
     def _safe_lookup(self, **filters) -> Client | None:
         try:
-            return Client.objects.filter(**filters).first()
+            # Avoids unnecessary ORDER BY name (from Meta.ordering) on unique lookups
+            return Client.objects.filter(**filters).order_by().first()
         except (OperationalError, ProgrammingError):
             logger.warning(
                 "Tenant lookup skipped because the customers table is unavailable.",
