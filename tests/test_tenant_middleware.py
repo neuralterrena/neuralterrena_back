@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from unittest.mock import Mock
 
 import pytest
+from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.db import ProgrammingError
 from django.http import Http404
@@ -37,7 +38,6 @@ class TestJWTTenantMiddleware:
             client_manager_mock,
         )
         # Clear cache to prevent cached tenant from bleeding over from other tests
-        from django.core.cache import cache
         cache.clear()
 
         request = rf.get("/api/users/me/", HTTP_AUTHORIZATION=f"Bearer {token}")
@@ -68,7 +68,6 @@ class TestJWTTenantMiddleware:
             "neuralterrena.customers.middleware.Client.objects",
             client_manager_mock,
         )
-        from django.core.cache import cache
         cache.clear()
 
         request = rf.post("/api/auth/login/", HTTP_X_CLIENT_ID="13")
@@ -100,7 +99,6 @@ class TestJWTTenantMiddleware:
             "neuralterrena.customers.middleware.Client.objects",
             client_manager_mock,
         )
-        from django.core.cache import cache
         cache.clear()
 
         request = rf.get("/api/docs/")
@@ -128,7 +126,6 @@ class TestJWTTenantMiddleware:
             "neuralterrena.customers.middleware.Client.objects",
             client_manager_mock,
         )
-        from django.core.cache import cache
         cache.clear()
 
         request = rf.get("/api/docs/")
