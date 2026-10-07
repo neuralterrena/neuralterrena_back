@@ -4,6 +4,7 @@ import json
 import logging
 
 from django.conf import settings
+from django.core.cache import cache
 from django.core.exceptions import ImproperlyConfigured
 from django.db import OperationalError
 from django.db import ProgrammingError
@@ -144,11 +145,21 @@ class JWTTenantMiddleware:
         return self._safe_lookup(schema_name=settings.PUBLIC_SCHEMA_NAME)
 
     def _safe_lookup(self, **filters) -> Client | None:
+        # Cache tenant lookup to avoid database hit on every request
+        cache_key = f"tenant_{'_'.join(f'{k}_{v}' for k, v in sorted(filters.items()))}"
+        tenant = cache.get(cache_key)
+        if tenant:
+            return tenant
+
         try:
-            return Client.objects.filter(**filters).first()
+            tenant = Client.objects.filter(**filters).first()
         except (OperationalError, ProgrammingError):
             logger.warning(
                 "Tenant lookup skipped because the customers table is unavailable.",
                 exc_info=True,
             )
             raise TenantTableUnavailableError from None
+        else:
+            if tenant:
+                cache.set(cache_key, tenant, 3600)
+            return tenant
